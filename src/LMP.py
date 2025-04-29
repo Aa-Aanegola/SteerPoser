@@ -13,9 +13,13 @@ from steered_model import SteeredModel
 
 class LMP:
     """Language Model Program (LMP), adopted from Code as Policies."""
-    def __init__(self, name, cfg, fixed_vars, variable_vars, debug=False, env='rlbench'):
-        self._name = name
-        self._cfg = cfg
+    def __init__(self, name, cfg, fixed_vars, variable_vars, debug=False, env='rlbench', model=None):
+        # fixed vars and variable vars define function interface available to LLM
+        # fixed vars are static, come from transforms3d library
+        # variable vars are VoxPoser defined functions, defined in interfaces.py.
+        #  Includes access to other low-level LMPs, i.e. planner can call composer. 
+        self._name = name # composer, planner, affordance map generator, etc
+        self._cfg = cfg # cfg['lmp_config']['lmps'][name]
         self._debug = debug
         self._base_prompt = load_prompt(f"{env}/{self._cfg['prompt_fname']}.txt")
         self._stop_tokens = list(self._cfg['stop'])
@@ -25,11 +29,14 @@ class LMP:
         self._context = None
         self._cache = DiskCache(load_cache=self._cfg['load_cache'])
         
-        ## Steered model specific stuff
-        self.steer_cfg = get_config(config_path='./configs/steering.yaml')
         
-        if self.steer_cfg['use_local']:
-            self.model = SteeredModel(self.steer_cfg)
+        if self._cfg['use_local']: # whether steering with local model vs openai api call
+            if model is None:
+                self.steer_cfg = get_config(config_path='./configs/steering.yaml')
+                self.model = SteeredModel(self.steer_cfg)
+            else:
+                print(f"using passed in model for LMP {self._name}")
+                self.model = model
 
     def clear_exec_hist(self):
         self.exec_hist = ''
@@ -57,8 +64,7 @@ class LMP:
     
     def _cached_api_call(self, **kwargs):
         # check whether completion endpoint or chat endpoint is used
-        if kwargs['model'] != 'gpt-3.5-turbo-instruct' and \
-            any([chat_model in kwargs['model'] for chat_model in ['gpt-3.5', 'gpt-4']]):
+        if kwargs['model'] != 'gpt-3.5-turbo-instruct' and any([chat_model in kwargs['model'] for chat_model in ['gpt-3.5', 'gpt-4']]):
             # add special prompt for chat endpoint
             user1 = kwargs.pop('prompt')
             new_query = '# Query:' + user1.split('# Query:')[-1]
@@ -91,7 +97,7 @@ class LMP:
                 # post processing
                 ret = ret.replace('```', '').replace('python', '').strip()
                 self._cache[kwargs] = ret
-                return ret
+                return ret, kwargs
         else:
             if kwargs in self._cache:
                 print('(using cache)', end=' ')
@@ -100,7 +106,7 @@ class LMP:
                 response = openai.completions.create(**kwargs)['choices'][0]['text'].strip()
                 ret = response.choices[0].text.strip()
                 self._cache[kwargs] = ret
-                return ret
+                return ret, kwargs
     
     def _chat_template(self, messages):
         prompt = ''
@@ -109,7 +115,8 @@ class LMP:
                 prompt += f'[USER] {message["content"]}\n'
             elif message['role'] == 'assistant':
                 prompt += f'[ASSISTANT] {message["content"]}\n'
-
+        return prompt
+    
     def _local_call(self, **kwargs):
         user1 = kwargs.pop('prompt')
         new_query = '# Query:' + user1.split('# Query:')[-1]
@@ -132,7 +139,7 @@ class LMP:
         
         prompt = self._chat_template(messages)
         ret = self.model.generate(prompt)
-        return ret
+        return ret, prompt
 
     def __call__(self, query, **kwargs):
         prompt, user_query = self.build_prompt(query)
@@ -140,27 +147,28 @@ class LMP:
         start_time = time.time()
         while True:
             try:
-                if self.steer_cfg['use_local']:
-                    code_str = self._local_call(
-                    prompt=prompt,
-                    stop=self._stop_tokens,
-                    temperature=self._cfg['temperature'],
-                    max_tokens=self._cfg['max_tokens']
-                )
+                if self._cfg['use_local']:
+                    code_str, prompt = self._local_call(
+                        prompt=prompt,
+                        stop=self._stop_tokens,
+                        temperature=self._cfg['temperature'],
+                        max_tokens=self._cfg['max_tokens']
+                    )
+                    print(f'*** Local call took {time.time() - start_time:.2f}s ***')
                 else:
-                    code_str = self._cached_api_call(
+                    code_str, prompt = self._cached_api_call(
                         prompt=prompt,
                         stop=self._stop_tokens,
                         temperature=self._cfg['temperature'],
                         model=self._cfg['model'],
                         max_tokens=self._cfg['max_tokens']
                     )
+                    print(f'*** OpenAI API call took {time.time() - start_time:.2f}s ***')
                 break
             except (RateLimitError, APIConnectionError) as e:
                 print(f'OpenAI API got err {e}')
                 print('Retrying after 3s.')
                 sleep(3)
-        print(f'*** OpenAI API call took {time.time() - start_time:.2f}s ***')
 
         if self._cfg['include_context']:
             assert self._context is not None, 'context is None'
@@ -239,3 +247,4 @@ def exec_safe(code_str, gvars=None, lvars=None):
     except Exception as e:
         print(f'Error executing code:\n{code_str}')
         raise e
+    

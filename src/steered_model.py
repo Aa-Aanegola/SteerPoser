@@ -22,9 +22,9 @@ class SteeredModel:
     
     # Takes a list of raw text prompts and generates text
     def generate(self, prompt):
-        steered_responses = malleable_model.respond_batch_sequential(
+        steered_responses = self.malleable_model.respond_batch_sequential(
             prompts=[prompt],
             use_chat_template=False,
-            settings = settings
+            settings = self.settings
         )
         return steered_responses[0]

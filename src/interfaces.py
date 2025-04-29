@@ -398,7 +398,7 @@ class LMP_interface():
     avoidance_map = np.clip(avoidance_map, 0, 1)
     return avoidance_map
 
-def setup_LMP(env, general_config, debug=False):
+def setup_LMP(env, general_config, debug=False, model=None):
   controller_config = general_config['controller']
   planner_config = general_config['planner']
   lmp_env_config = general_config['lmp_config']['env']
@@ -414,7 +414,7 @@ def setup_LMP(env, general_config, debug=False):
       'qinverse': transforms3d.quaternions.qinverse,
       'qmult': transforms3d.quaternions.qmult,
   }  # external library APIs
-  variable_vars = {
+  variable_vars = { # maps name of function to the function itself, dir(class) returns all attributes of the class
       k: getattr(lmp_env, k)
       for k in dir(lmp_env) if callable(getattr(lmp_env, k)) and not k.startswith("_")
   }  # our custom APIs exposed to LMPs
@@ -422,24 +422,22 @@ def setup_LMP(env, general_config, debug=False):
   # allow LMPs to access other LMPs
   lmp_names = [name for name in lmps_config.keys() if not name in ['composer', 'planner', 'config']]
   low_level_lmps = {
-      k: LMP(k, lmps_config[k], fixed_vars, variable_vars, debug, env_name)
+      k: LMP(k, lmps_config[k], fixed_vars, variable_vars, debug, env_name, model)
       for k in lmp_names
   }
   variable_vars.update(low_level_lmps)
 
   # creating the LMP for skill-level composition
   composer = LMP(
-      'composer', lmps_config['composer'], fixed_vars, variable_vars, debug, env_name
+      'composer', lmps_config['composer'], fixed_vars, variable_vars, debug, env_name, model
   )
   variable_vars['composer'] = composer
 
   # creating the LMP that deals w/ high-level language commands
-  task_planner = LMP(
-      'planner', lmps_config['planner'], fixed_vars, variable_vars, debug, env_name
-  )
+  task_planner = 
 
   lmps = {
-      'plan_ui': task_planner,
+      'plan_ui': LMP('planner', lmps_config['planner'], fixed_vars, variable_vars, debug, env_name, model),
       'composer_ui': composer,
   }
   lmps.update(low_level_lmps)
