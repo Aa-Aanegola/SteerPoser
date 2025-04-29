@@ -8,8 +8,13 @@ class SteeredModel:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         if verbose:
             print(f"Loading {cfg.model_name} into HF cache dir {cfg.cache_dir} on device {device}")
-        self.model = AutoModelForCausalLM.from_pretrained(cfg.model_name, cache_dir=cfg.cache_dir, local_files_only=True).to(device)
+        self.model = AutoModelForCausalLM.from_pretrained(cfg.model_name, cache_dir=cfg.cache_dir, local_files_only=True, device_map='auto', torch_dtype=torch.float16)
         self.tokenizer = AutoTokenizer.from_pretrained(cfg.model_name, cache_dir=cfg.cache_dir, local_files_only=True)
+        main_device = model.hf_device_map.get(next(iter(model.hf_device_map)))
+        if isinstance(main_device, int):
+            main_device = torch.device(f"cuda:{main_device}")
+        else:
+            main_device = torch.device(main_device)
         self.steering_vector = SteeringVector.load(cfg.steering_vector_path)
         self.malleable_model = MalleableModel(self.model, self.tokenizer)
         self.malleable_model.steer(
@@ -17,6 +22,7 @@ class SteeredModel:
             behavior_layer_ids=cfg.behavior_layer_ids,
             behavior_vector_strength=cfg.behavior_vector_strength,
         )
+        self.malleable_model.device = main_device
         self.settings = {
             "pad_token_id": self.tokenizer.eos_token_id,
             "do_sample": False,
