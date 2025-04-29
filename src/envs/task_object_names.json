@@ -7,5 +7,13 @@
     "meat_off_grill": [["grill", "grill"], ["meat", "chicken"]],
     "slide_block_to_target": [["block", "block"], ["target", "target"]],
     "take_lid_off_saucepan": [["saucepan", "saucepan"], ["saucepan_lid", "saucepan_lid"]],
-    "take_umbrella_out_of_umbrella_stand": [["umbrella", "umbrella"], ["stand", "stand"]]
+    "take_umbrella_out_of_umbrella_stand": [["umbrella", "umbrella"], ["stand", "stand"]], 
+    "open_oven": [["oven_door", "oven_door"]], 
+    "pick_and_lift": [["target_block", "pick_and_lift_target"], ["distractor0", "stack_blocks_distractor0"], ["distractor1", "stack_blocks_distractor1"]], 
+    "pick_and_lift_small": [["cube", "cube"], ["cylinder", "cylinder"],["triangular_prism", "triangular_prism"],["star", "star"],["moon", "moon"]], 
+    "put_tray_in_oven": [["tray", "tray"]], 
+    "open_microwave": [["microwave", "microwave"]],
+    "close_microwave": [["microwave", "microwave"]], 
+    "put_knife_in_knife_block": [["knife", "knife"],["knife_block", "knife_block"],["chopping_board", "chopping_board"]], 
+    "put_knife_on_chopping_board": [["knife", "knife"],["knife_block", "knife_block"]]
 }

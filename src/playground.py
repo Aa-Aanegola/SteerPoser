@@ -41,8 +41,8 @@ env = VoxPoserRLBench(visualizer=visualizer)
 
 # below are the tasks that have object names added to the "task_object_names.json" file
 # uncomment one to use
-env.load_task(tasks.PutRubbishInBin)
-# env.load_task(tasks.LampOff)
+# env.load_task(tasks.PutRubbishInBin)
+# env.load_task(tasks.OpenMicrowave)
 # env.load_task(tasks.OpenWineBottle)
 # env.load_task(tasks.PushButton)
 # env.load_task(tasks.TakeOffWeighingScales)
@@ -50,6 +50,22 @@ env.load_task(tasks.PutRubbishInBin)
 # env.load_task(tasks.SlideBlockToTarget)
 # env.load_task(tasks.TakeLidOffSaucepan)
 # env.load_task(tasks.TakeUmbrellaOutOfUmbrellaStand)
+
+#task 1
+env.load_task(tasks.OpenMicrowave)
+env.load_task(tasks.PickAndLift)
+env.load_task(tasks.CloseMicrowave)
+env.load_task(tasks.PushButton)
+
+#task 2
+env.load_task(tasks.OpenOven)
+env.load_task(tasks.PickAndLift)
+env.load_task(tasks.PutTrayInOven)
+
+#task 3
+env.load_task(tasks.PutKnifeInKnifeBlock)
+env.load_task(tasks.PutKnifeOnChoppingBoard)
+
 
 descriptions, obs = env.reset()
 # set_lmp_objects(lmps, env.get_object_names())  # set the object names to be used by voxposer
