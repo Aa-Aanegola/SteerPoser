@@ -225,6 +225,7 @@ class VoxPoserRLBench():
             tuple: A tuple containing task descriptions and initial observations.
         """
         assert self.task is not None, "Please load a task first"
+        print("Reseting environment")
         self.task.sample_variation()
         descriptions, obs = self.task.reset()
         obs = self._process_obs(obs)

@@ -434,8 +434,6 @@ def setup_LMP(env, general_config, debug=False, model=None):
   variable_vars['composer'] = composer
 
   # creating the LMP that deals w/ high-level language commands
-  task_planner = 
-
   lmps = {
       'plan_ui': LMP('planner', lmps_config['planner'], fixed_vars, variable_vars, debug, env_name, model),
       'composer_ui': composer,

@@ -1,13 +1,15 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from activation_steering import MalleableModel, SteeringVector
+import torch
 
 class SteeredModel:
     def __init__(self, cfg, verbose=True):
         self.cfg = cfg
-        if(verbose):
-            print(f"Loading {cfg.model_name} into HF cache dir {cfg.cache_dir}")
-        self.model = AutoModelForCausalLM.from_pretrained(cfg.model_name, device_map="auto")
-        self.tokenizer = AutoTokenizer.from_pretrained(cfg.model_name)
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        if verbose:
+            print(f"Loading {cfg.model_name} into HF cache dir {cfg.cache_dir} on device {device}")
+        self.model = AutoModelForCausalLM.from_pretrained(cfg.model_name, cache_dir=cfg.cache_dir, local_files_only=True).to(device)
+        self.tokenizer = AutoTokenizer.from_pretrained(cfg.model_name, cache_dir=cfg.cache_dir, local_files_only=True)
         self.steering_vector = SteeringVector.load(cfg.steering_vector_path)
         self.malleable_model = MalleableModel(self.model, self.tokenizer)
         self.malleable_model.steer(
@@ -16,29 +18,38 @@ class SteeredModel:
             behavior_vector_strength=cfg.behavior_vector_strength,
         )
         self.settings = {
-            "pad_token_id": tokenizer.eos_token_id,
+            "pad_token_id": self.tokenizer.eos_token_id,
             "do_sample": False,
             "max_new_tokens": cfg.max_new_tokens,
             "repetition_penalty": 1.1,
-}
-    
-    # Takes a list of raw text prompts and generates text
-    def generate(self, prompt):
-        steered_responses = self.malleable_model.respond_batch_sequential(
-            prompts=[prompt],
-            use_chat_template=False,
-            settings = self.settings
-        )
-        return steered_responses[0]
+        }
 
+    def generate(self, prompts, steer=True):
+        # Accept a single string or a list of strings
+        if isinstance(prompts, str):
+            prompts = [prompts]
+
+        if steer:
+            # Steered generation using MalleableModel
+            responses = self.malleable_model.respond_batch_sequential(
+                prompts=prompts,
+                use_chat_template=False,
+                settings=self.settings
+            )
+        else:
+            # Unsteered generation using regular Hugging Face model
+            inputs = self.tokenizer(prompts, return_tensors="pt", padding=True).to(self.model.device)
+            outputs = self.model.generate(**inputs, **self.settings)
+            responses = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+
+        # If user passed a single prompt, return a single string
+        return responses[0] if len(responses) == 1 else responses
 
 if __name__ == '__main__':
     from arguments import get_config
-    steer_cfg = get_config(config_path='./configs/steering.yaml')
-    model = AutoModelForCausalLM.from_pretrained(cfg.model_name, cache_dir=cfg.cache_dir, device_map="auto")
-    print(f"Loaded {model=}")
-    tokenizer = AutoTokenizer.from_pretrained(cfg.model_name, cache_dir=cfg.cache_dir)
-    print(f"Loaded {tokenizer=}")
+    cfg = get_config(config_path='./configs/steering.yaml')
+    model = SteeredModel(cfg)
+    print(model.generate("write a haiku about frogs"))
 
     
     
