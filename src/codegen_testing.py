@@ -2,8 +2,8 @@ import os
 import subprocess
 import time
 import sys
-sys.path.append('/workspace/activation-steering')
-
+sys.path.append("/workspace/SteerKep/activation-steering")
+sys.path.append("/workspace/SteerKep/RLBench")
 if not os.path.exists("/tmp/.X99-lock"):
     # Start Xvfb manually (xvfb-run does this under the hood)
     xvfb_proc = subprocess.Popen([
@@ -45,16 +45,19 @@ print("done loading model")
 lmps, lmp_env = setup_LMP(env, config, debug=True, model=model)
 print(f"Set up lmps: {lmps.keys()}")
 
-descriptions, obs = env.reset()
-instruction = np.random.choice(descriptions)
-print(f"Chose from {descriptions}, selected {instruction}")
-print("\n___________________________\n", obs)
+#descriptions, obs = env.reset()
+#instruction = np.random.choice(descriptions)
+instruction = "set the tableplace the dishes and cutlery on the table in preparation for a meal"
+#print(f"Chose from {descriptions}, selected {instruction}")
+#print("\n___________________________\n", obs)
 set_lmp_objects(lmps, env.get_object_names())  # set the object names to be used by voxposer
 affordance_mapper = lmps['get_affordance_map']
 
 #lmps['plan_ui'](instruction)
 
-prompt, user_query = self.build_prompt(query)
+prompt, user_query = affordance_mapper.build_prompt("center of the plate, avoid sharp knife")
+print(f"Prompt is {prompt}")
+start_time = time.time()
 code_str, prompt = affordance_mapper._local_call(
     prompt=prompt,
     stop=affordance_mapper._stop_tokens,
