@@ -9,6 +9,7 @@ from rlbench.environment import Environment
 import rlbench.tasks as tasks
 from pyrep.const import ObjectType
 from utils import normalize_vector, bcolors
+import pickle as pkl
 
 class CustomMoveArmThenGripper(MoveArmThenGripper):
     """
@@ -227,18 +228,37 @@ class VoxPoserRLBench():
         Returns:
             tuple: A tuple containing task descriptions and initial observations.
         """
+        print("___________RESET________________________________________")
         assert self.task is not None, "Please load a task first"
+        print("assert")
         self.task.sample_variation()
-        descriptions, obs = self.task.reset()
+        print("done sample variation")
+        # descriptions, obs = self.task.reset()
         
         if self.task_name == 'set_the_table':
-            descriptions = ['Pick up a snack for me'] 
+            descriptions = ['Grasp a snack'] 
                             # 'Move a snack I might like next to a snack I might not like']
-
+                
+            with open('/workspace/SteerKep/SteerPoser/src/envs/obs.pkl', 'rb') as f:
+                obs = pkl.load(f)
+                print("f", f)
+                print("obs", obs)
+            print("manual override descriptions and obs")
+        
+        else:
+            descriptions, obs = self.task.reset()
+            print("root reset")
+        
+        
         obs = self._process_obs(obs)
+        print("processing obs")
+        print("obs", obs)
         self.init_obs = obs
+        print("set obs")
+        print("obs", obs)
         self.latest_obs = obs
         self._update_visualizer()
+        print("update vis")
         return descriptions, obs
 
     def apply_action(self, action):

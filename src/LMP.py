@@ -30,13 +30,13 @@ class LMP:
         self._cache = DiskCache(load_cache=self._cfg['load_cache'])
         
         
-        # if self._cfg['use_local']: # whether steering with local model vs openai api call
-        #     if model is None:
-        #         self.steer_cfg = get_config(config_path='./configs/steering.yaml')
-        #         self.model = SteeredModel(self.steer_cfg)
-        #     else:
-        #         print(f"using passed in model for LMP {self._name}")
-        #         self.model = model
+        if self._cfg['use_local']: # whether steering with local model vs openai api call
+             if model is None:
+                 self.steer_cfg = get_config(config_path='./configs/steering.yaml')
+                 self.model = SteeredModel(self.steer_cfg)
+             else:
+                 print(f"using passed in model for LMP {self._name}")
+                 self.model = model
 
     def clear_exec_hist(self):
         self.exec_hist = ''
@@ -112,17 +112,16 @@ class LMP:
         prompt = ''
         for message in messages:
             if message['role'] == 'user':
-                prompt += f'[USER] {message["content"]}\n'
+                prompt += f'{message["content"]}\n'
             elif message['role'] == 'assistant':
-                prompt += f'[ASSISTANT] {message["content"]}\n'
+                prompt += f'{message["content"]}\n'
         return prompt
     
     def _local_call(self, **kwargs):
         user1 = kwargs.pop('prompt')
         new_query = '# Query:' + user1.split('# Query:')[-1]
         user1 = ''.join(user1.split('# Query:')[:-1]).strip()
-        user1 = f"I would like you to help me write Python code to control a robot arm operating in a tabletop environment. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{user1}\n```\n\nNote that x is back to front, y is left to right, and z is bottom to up."
-        assistant1 = f'Got it. I will complete what you give me next.'
+        user1 = f"I would like you to help me write Python code to control a robot arm operating in a tabletop environment. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{user1}\n```\n\nNote that x is back to front, y is left to right, and z is bottom to up. Your task is just to write clean and concise code that follows the template above based on the objects and query supplied below."
         user2 = new_query
         
         if user1.split('\n')[-4].startswith('objects = ['):
@@ -132,12 +131,14 @@ class LMP:
         messages=[
             {"role": "system", "content": "You are a helpful assistant that pays attention to the user's instructions and writes good python code for operating a robot arm in a tabletop environment."},
             {"role": "user", "content": user1},
-            {"role": "assistant", "content": assistant1},
             {"role": "user", "content": user2},
         ]
         kwargs['messages'] = messages
         
         prompt = self._chat_template(messages)
+
+        # print("prompting model with", prompt)
+        
         ret = self.model.generate(prompt)
         return ret, prompt
 
@@ -148,7 +149,7 @@ class LMP:
         while True:
             try:
                 if self._cfg['use_local']:
-                    code_str, prompt = self._local_call(
+                    code_str, _ = self._local_call(
                         prompt=prompt,
                         stop=self._stop_tokens,
                         temperature=self._cfg['temperature'],
@@ -156,7 +157,7 @@ class LMP:
                     )
                     print(f'*** Local call took {time.time() - start_time:.2f}s ***')
                 else:
-                    code_str, prompt = self._cached_api_call(
+                    code_str, _ = self._cached_api_call(
                         prompt=prompt,
                         stop=self._stop_tokens,
                         temperature=self._cfg['temperature'],
@@ -231,7 +232,8 @@ def merge_dicts(dicts):
 def exec_safe(code_str, gvars=None, lvars=None):
     banned_phrases = ['import', '__']
     for phrase in banned_phrases:
-        assert phrase not in code_str
+        print("in exec_safe", phrase)
+        assert phrase not in code_str, code_str
   
     if gvars is None:
         gvars = {}
