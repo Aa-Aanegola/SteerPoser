@@ -27,7 +27,7 @@ class SteeredModel:
             "repetition_penalty": 1.1,
         }
 
-    def generate(self, prompts, steer=True):
+    def generate(self, prompts, steer=False):
         # Accept a single string or a list of strings
         if isinstance(prompts, str):
             prompts = [prompts]

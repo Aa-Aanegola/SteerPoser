@@ -4,6 +4,7 @@ import time
 import sys
 sys.path.append("/workspace/SteerKep/activation-steering")
 sys.path.append("/workspace/SteerKep/RLBench")
+
 if not os.path.exists("/tmp/.X99-lock"):
     # Start Xvfb manually (xvfb-run does this under the hood)
     xvfb_proc = subprocess.Popen([

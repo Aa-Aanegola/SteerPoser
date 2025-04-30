@@ -30,13 +30,13 @@ class LMP:
         self._cache = DiskCache(load_cache=self._cfg['load_cache'])
         
         
-        if self._cfg['use_local']: # whether steering with local model vs openai api call
-            if model is None:
-                self.steer_cfg = get_config(config_path='./configs/steering.yaml')
-                self.model = SteeredModel(self.steer_cfg)
-            else:
-                print(f"using passed in model for LMP {self._name}")
-                self.model = model
+        # if self._cfg['use_local']: # whether steering with local model vs openai api call
+        #     if model is None:
+        #         self.steer_cfg = get_config(config_path='./configs/steering.yaml')
+        #         self.model = SteeredModel(self.steer_cfg)
+        #     else:
+        #         print(f"using passed in model for LMP {self._name}")
+        #         self.model = model
 
     def clear_exec_hist(self):
         self.exec_hist = ''
@@ -90,7 +90,7 @@ class LMP:
             
             if kwargs in self._cache:
                 print('(using cache)', end=' ')
-                return self._cache[kwargs]
+                return self._cache[kwargs], kwargs
             else:
                 response = openai.chat.completions.create(**kwargs)
                 ret = response.choices[0].message.content
@@ -101,7 +101,7 @@ class LMP:
         else:
             if kwargs in self._cache:
                 print('(using cache)', end=' ')
-                return self._cache[kwargs]
+                return self._cache[kwargs], kwargs
             else:
                 response = openai.completions.create(**kwargs)['choices'][0]['text'].strip()
                 ret = response.choices[0].text.strip()
