@@ -8,5 +8,5 @@
     "slide_block_to_target": [["block", "block"], ["target", "target"]],
     "take_lid_off_saucepan": [["saucepan", "saucepan"], ["saucepan_lid", "saucepan_lid"]],
     "take_umbrella_out_of_umbrella_stand": [["umbrella", "umbrella"], ["stand", "stand"]],
-    "set_the_table"  : [["knife", "knife"], ["plate", "plate"], ["fork", "fork"], ["glass", "glass"]]
+    "set_the_table"  : [["chocolate", "knife"], ["apple", "plate"], ["granola", "fork"], ["soda", "glass"]]
 }

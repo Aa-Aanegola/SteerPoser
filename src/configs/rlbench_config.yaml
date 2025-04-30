@@ -94,7 +94,7 @@ lmp_config:
       has_return: True
       return_val_name: ret_val
       load_cache: True
-      use_local: True
+      use_local: False
     get_avoidance_map:
       prompt_fname: get_avoidance_map_prompt
       model: gpt-4
@@ -110,7 +110,7 @@ lmp_config:
       has_return: True
       return_val_name: ret_val
       load_cache: True
-      use_local: True
+      use_local: False
     get_velocity_map:
       prompt_fname: get_velocity_map_prompt
       model: gpt-4
@@ -126,7 +126,7 @@ lmp_config:
       has_return: True
       return_val_name: ret_val
       load_cache: True
-      use_local: True
+      use_local: False
     get_rotation_map:
       prompt_fname: get_rotation_map_prompt
       model: gpt-4
@@ -142,7 +142,7 @@ lmp_config:
       has_return: True
       return_val_name: ret_val
       load_cache: True
-      use_local: True
+      use_local: False
     get_gripper_map:
       prompt_fname: get_gripper_map_prompt
       model: gpt-4
@@ -158,4 +158,4 @@ lmp_config:
       has_return: True
       return_val_name: ret_val
       load_cache: True
-      use_local: True
+      use_local: False

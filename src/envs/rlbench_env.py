@@ -51,6 +51,7 @@ class VoxPoserRLBench():
         self.rlbench_env = Environment(action_mode)
         self.rlbench_env.launch()
         self.task = None
+        self.task_name = None
 
         self.workspace_bounds_min = np.array([self.rlbench_env._scene._workspace_minx, self.rlbench_env._scene._workspace_miny, self.rlbench_env._scene._workspace_minz])
         self.workspace_bounds_max = np.array([self.rlbench_env._scene._workspace_maxx, self.rlbench_env._scene._workspace_maxy, self.rlbench_env._scene._workspace_maxz])
@@ -102,6 +103,8 @@ class VoxPoserRLBench():
         if isinstance(task, str):
             task = getattr(tasks, task)
         self.task = self.rlbench_env.get_task(task)
+        self.task_name = self.task.get_name()
+        print("Loaded task:", self.task_name)
         self.arm_mask_ids = [obj.get_handle() for obj in self.task._robot.arm.get_objects_in_tree(exclude_base=False)]
         self.gripper_mask_ids = [obj.get_handle() for obj in self.task._robot.gripper.get_objects_in_tree(exclude_base=False)]
         self.robot_mask_ids = self.arm_mask_ids + self.gripper_mask_ids
@@ -225,9 +228,13 @@ class VoxPoserRLBench():
             tuple: A tuple containing task descriptions and initial observations.
         """
         assert self.task is not None, "Please load a task first"
-        print("Reseting environment")
         self.task.sample_variation()
         descriptions, obs = self.task.reset()
+        
+        if self.task_name == 'set_the_table':
+            descriptions = ['Pick up a snack for me'] 
+                            # 'Move a snack I might like next to a snack I might not like']
+
         obs = self._process_obs(obs)
         self.init_obs = obs
         self.latest_obs = obs

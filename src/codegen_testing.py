@@ -2,7 +2,7 @@ import os
 import subprocess
 import time
 import sys
-sys.path.append('/workspace/activation-steering')
+# sys.path.append('~/activation-steering')
 
 if not os.path.exists("/tmp/.X99-lock"):
     # Start Xvfb manually (xvfb-run does this under the hood)
