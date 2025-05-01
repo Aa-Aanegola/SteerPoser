@@ -51,6 +51,12 @@ class VoxPoserRLBench():
                                         gripper_action_mode=Discrete())
         self.rlbench_env = Environment(action_mode, headless=True)
         self.rlbench_env.launch()
+
+        try:
+            _ = self.rlbench_env._scene  # Accessing the scene (private, but more stable)
+        except Exception as e:
+            raise RuntimeError("Scene failed to load.") from e
+            
         self.task = None
         self.task_name = None
 

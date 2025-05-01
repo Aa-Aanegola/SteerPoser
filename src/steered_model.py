@@ -61,23 +61,19 @@ class SteeredModel:
         }
         self.model.eval()
 
-    def generate(self, prompts, steer=False):
+    def generate(self, prompts, steer=True):
         # Accept a single string or a list of strings
         if isinstance(prompts, str):
             prompts = [prompts]
 
-        # if steer:
-        #     # Steered generation using MalleableModel
-        #     responses = self.malleable_model.respond_batch_sequential(
-        #         prompts=prompts,
-        #         use_chat_template=False,
-        #         settings=self.settings
-        #     )
-        # else:
-        #     # Unsteered generation using regular Hugging Face model
-        #     inputs = self.tokenizer(prompts, return_tensors="pt", padding=True).to(self.model.device)
-        #     outputs = self.model.generate(**inputs, **self.settings)
-        #     responses = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+        if steer:
+             # Steered generation using MalleableModel
+            responses = self.malleable_model.respond_batch_sequential(prompts=prompts,settings=self.settings) 
+         else:
+             # Unsteered generation using regular Hugging Face model
+             inputs = self.tokenizer(prompts, return_tensors="pt", padding=True).to(self.model.device)
+             outputs = self.model.generate(**inputs, **self.settings)
+             responses = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
         # # If user passed a single prompt, return a single string
         # ret = []
@@ -85,16 +81,9 @@ class SteeredModel:
         #     ret.append(response.split('#')[0])
 
         # print("from the steered model -", ret)
-
-        steered_responses = self.malleable_model.respond_batch_sequential(
-            prompts=prompts,
-            settings=self.settings
-        )
-
-        print("in steered model", steered_responses[0])
-        print("after parsing", parse_output(steered_responses[0]))
-        
-        return parse_output(steered_responses[0]) if len(steered_responses) == 1 else steered_responses
+        print("raw output: ", responses[0])
+        print("\nafter parsing", parse_output(responses[0]))
+        return parse_output(responses[0]) if len(responses) == 1 else responses
 
 if __name__ == '__main__':
     from arguments import get_config

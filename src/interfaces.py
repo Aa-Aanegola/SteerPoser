@@ -34,6 +34,22 @@ class LMP_interface():
   # ======================================================
   def get_ee_pos(self):
     return self._world_to_voxel(self._env.get_ee_pos())
+
+  def select_preference_vector(self, ):
+      vector_dirs = {
+            "sammy": "sammy_vector",
+            "danelle": "danelle_vector",
+            "aakash": "aakash_vector"
+        }
+    
+        while True:
+            user = input(f"Who am I speaking to? Options: {', '.join(vector_dirs.keys())} ").strip().lower()
+            if user in vector_dirs:
+                steer_vector = 
+            else:
+                print("Sorry, I didn't recognize that name. Please try again.")
+
+  
   
   def detect(self, obj_name):
     """return an observation dict containing useful information about the object"""
