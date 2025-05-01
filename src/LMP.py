@@ -134,13 +134,22 @@ class LMP:
             {"role": "user", "content": user2},
         ]
         kwargs['messages'] = messages
+
+        kwargs['local'] = True
+
+        if kwargs in self._cache:
+            print("using cached response yeehaw")
+            return self._cache[kwargs], kwargs
         
         prompt = self._chat_template(messages)
 
         # print("prompting model with", prompt)
         
         ret = self.model.generate(prompt)
-        return ret, prompt
+
+        self._cache[kwargs] = ret
+        
+        return ret, kwargs
 
     def __call__(self, query, **kwargs):
         prompt, user_query = self.build_prompt(query)

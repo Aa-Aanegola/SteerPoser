@@ -60,9 +60,9 @@ voxposer_ui = lmps['plan_ui']
 # env.load_task(tasks.TakeUmbrellaOutOfUmbrellaStand)
 env.load_task(tasks.SetTheTable)
 
-print("MOMENT OF TRUTH")
-env.task.reset()
-print("INVICTUSSSSS")
+# print("MOMENT OF TRUTH")
+# env.task.reset()
+# print("INVICTUSSSSS")
 descriptions, obs = env.reset()
 print(descriptions, obs)
 set_lmp_objects(lmps, env.get_object_names())
