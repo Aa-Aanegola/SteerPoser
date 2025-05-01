@@ -49,7 +49,7 @@ class VoxPoserRLBench():
         """
         action_mode = CustomMoveArmThenGripper(arm_action_mode=EndEffectorPoseViaPlanning(),
                                         gripper_action_mode=Discrete())
-        self.rlbench_env = Environment(action_mode)
+        self.rlbench_env = Environment(action_mode, headless=True)
         self.rlbench_env.launch()
         self.task = None
         self.task_name = None
