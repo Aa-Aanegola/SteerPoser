@@ -1,5 +1,8 @@
 model_name: NousResearch/DeepHermes-3-Mistral-24B-Preview
-steering_vector_path: /workspace/SteerKep/SteerPoser/src/svec/junk-healthy-24b
+steering_vector_dir: /workspace/SteerKep/steer-data/vectors
+steering_datasets_dir: /workspace/SteerKep/steer-data/datasets
+steering_vector_name: junk-healthy-24b
+steering_vector_path: /workspace/SteerKep/steer-data/vectors/junk-healthy-24b
 behavior_layer_ids: [29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39]
 behavior_vector_strength: 2
 max_new_tokens: 256
