@@ -5,6 +5,12 @@ import plotly.graph_objects as go
 import datetime
 from transforms3d.quaternions import mat2quat
 
+def get_steer_cfg_path(user):
+    if user in ['aakash', 'danelle', 'sammy']:
+        return f'./configs/{user}.yaml'
+    else:
+        return './configs/steering.yaml'
+
 def set_lmp_objects(lmps, objects):
     if isinstance(lmps, dict):
         lmps = lmps.values()

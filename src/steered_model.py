@@ -16,7 +16,7 @@ def parse_output(raw_text):
     cleaned = re.sub(r'<\|.*?\|>', '', raw_text)
 
     # Remove dangling incomplete tokens (e.g. lines with just "com" or nonsense)
-    lines = [line.rstrip() for line in cleaned.split('\n')]
+    lines = [line.rstrip() for line in cleaned.split('\n') if '```' not in line]
     valid_lines = []
     for line in lines:
         line = line.strip()
@@ -63,13 +63,13 @@ class SteeredModel:
             prompts = [prompts]
 
         if steer:
-             # Steered generation using MalleableModel
+            # Steered generation using MalleableModel
             responses = self.malleable_model.respond_batch_sequential(prompts=prompts,settings=self.settings) 
-         else:
-             # Unsteered generation using regular Hugging Face model
-             inputs = self.tokenizer(prompts, return_tensors="pt", padding=True).to(self.model.device)
-             outputs = self.model.generate(**inputs, **self.settings)
-             responses = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+        else:
+            # Unsteered generation using regular Hugging Face model
+            inputs = self.tokenizer(prompts, return_tensors="pt", padding=True).to(self.model.device)
+            outputs = self.model.generate(**inputs, **self.settings)
+            responses = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
         # # If user passed a single prompt, return a single string
         # ret = []
@@ -77,8 +77,8 @@ class SteeredModel:
         #     ret.append(response.split('#')[0])
 
         # print("from the steered model -", ret)
-        print("raw output: ", responses[0])
-        print("\nafter parsing", parse_output(responses[0]))
+        #print("raw output: ", responses[0])
+        #print("\nafter parsing", parse_output(responses[0]))
         return parse_output(responses[0]) if len(responses) == 1 else responses
 
 if __name__ == '__main__':

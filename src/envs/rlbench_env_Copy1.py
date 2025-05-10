@@ -239,7 +239,7 @@ class VoxPoserRLBench1():
         
         if self.task_name == 'set_the_table':
             descriptions = ['Grasp the apple'] 
-                            # 'Move a snack I might like next to a snack I might not like']
+    # 'Move a snack I might like next to a snack I might not like']
                 
             with open('/workspace/SteerKep/SteerPoser/src/envs/obs.pkl', 'rb') as f:
                 obs = pkl.load(f)
