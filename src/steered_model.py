@@ -6,10 +6,6 @@ from activation_steering import MalleableModel, SteeringVector
 import torch
 import re
 
-import re
-
-import re
-
 def parse_output(raw_text):
     """
     Extracts valid Python code from raw model output.

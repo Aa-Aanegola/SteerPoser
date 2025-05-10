@@ -12,7 +12,6 @@ EE_ALIAS = ['ee', 'endeffector', 'end_effector', 'end effector', 'gripper', 'han
 TABLE_ALIAS = ['table', 'desk', 'workstation', 'work_station', 'work station', 'workspace', 'work_space', 'work space']
 
 class LMP_interface():
-
   def __init__(self, env, lmp_config, controller_config, planner_config, env_name='rlbench'):
     self._env = env
     self._env_name = env_name
@@ -35,7 +34,7 @@ class LMP_interface():
   def get_ee_pos(self):
     return self._world_to_voxel(self._env.get_ee_pos())
 
-  def select_preference_vector(self, ):
+  def select_preference_vector(self, name):
       vector_dirs = {
             "sammy": "sammy_vector",
             "danelle": "danelle_vector",
