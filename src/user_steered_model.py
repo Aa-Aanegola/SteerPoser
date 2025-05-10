@@ -79,9 +79,9 @@ class UserSteeredModel:
             self.use_steering = True
             self.update_steer(vec, strength, behavior_layer_ids)
 
-    def update_steer(self, steer_vector, strength, behavior_layer_ids):
+    def update_steer(self, steer_vector_name, strength, behavior_layer_ids):
         self.malleable_model = MalleableModel(self.model, self.tokenizer)
-        svpath = os.path.join(cfg.steering_vector_dir, steer_vector)
+        svpath = os.path.join(self.cfg.steering_vector_dir, steer_vector_name)
         self.steering_vector = SteeringVector.load(svpath)
         self.malleable_model.steer(
             self.steering_vector,
