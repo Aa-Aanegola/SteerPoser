@@ -43,13 +43,19 @@ steering_map = {
 
 
 class UserSteeredModel:
-    def __init__(self, cfg, user, verbose=True):
+    def __init__(self, cfg, user="", model=None, tokenizer=None, verbose=True):
         self.cfg = cfg
         device = "cuda" if torch.cuda.is_available() else "cpu"
         if verbose:
             print(f"Loading {cfg.model_name} into HF cache dir {cfg.cache_dir} on device {device}")
-        self.model = AutoModelForCausalLM.from_pretrained(cfg.model_name, cache_dir=cfg.cache_dir, local_files_only=True, device_map='auto', torch_dtype=torch.float16)
-        self.tokenizer = AutoTokenizer.from_pretrained(cfg.model_name, cache_dir=cfg.cache_dir, local_files_only=True)
+        if(model is None):
+            self.model = AutoModelForCausalLM.from_pretrained(cfg.model_name, cache_dir=cfg.cache_dir, local_files_only=True, device_map='auto', torch_dtype=torch.float16)
+        else:
+            self.model = model
+        if(tokenizer is None):
+            self.tokenizer = AutoTokenizer.from_pretrained(cfg.model_name, cache_dir=cfg.cache_dir, local_files_only=True)
+        else:
+            self.tokenizer = tokenizer
         self.malleable_model = MalleableModel(self.model, self.tokenizer)
         self.settings = {
             "pad_token_id": self.tokenizer.eos_token_id,
@@ -59,6 +65,7 @@ class UserSteeredModel:
         }
         self.model.eval()
         self.use_steering = False
+        self.user = user
 
     def set_user(self, user):
         if user in steering_map.keys():
