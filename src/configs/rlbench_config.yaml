@@ -21,7 +21,7 @@ controller:
 
 visualizer:
   save_dir: ./visualizations
-  quality: low
+  quality: medium
   map_size: 100
 
 lmp_config:

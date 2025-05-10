@@ -64,3 +64,6 @@ ret_val = fragile_items
 objects = ['blue block', 'red block']
 # Query: green block.
 ret_val = None
+
+
+objects = [blue

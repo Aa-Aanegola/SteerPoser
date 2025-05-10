@@ -137,9 +137,9 @@ class LMP:
 
         kwargs['local'] = True
 
-        if kwargs in self._cache:
-            print("using cached response yeehaw")
-            return self._cache[kwargs], kwargs
+        # if kwargs in self._cache:
+        #     print("using cached response yeehaw")
+        #     return self._cache[kwargs], kwargs
         
         prompt = self._chat_template(messages)
 
@@ -239,9 +239,10 @@ def merge_dicts(dicts):
     
 
 def exec_safe(code_str, gvars=None, lvars=None):
+    print("Executing code now")
     banned_phrases = ['import', '__']
     for phrase in banned_phrases:
-        print("in exec_safe", phrase)
+        print("running exec_safe for banned phrase:", phrase)
         assert phrase not in code_str, code_str
   
     if gvars is None:

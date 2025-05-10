@@ -49,14 +49,8 @@ class VoxPoserRLBench():
         """
         action_mode = CustomMoveArmThenGripper(arm_action_mode=EndEffectorPoseViaPlanning(),
                                         gripper_action_mode=Discrete())
-        self.rlbench_env = Environment(action_mode, headless=True)
+        self.rlbench_env = Environment(action_mode)
         self.rlbench_env.launch()
-
-        try:
-            _ = self.rlbench_env._scene  # Accessing the scene (private, but more stable)
-        except Exception as e:
-            raise RuntimeError("Scene failed to load.") from e
-            
         self.task = None
         self.task_name = None
 
@@ -242,7 +236,7 @@ class VoxPoserRLBench():
         # descriptions, obs = self.task.reset()
         
         if self.task_name == 'set_the_table':
-            descriptions = ['Grasp a snack'] 
+            descriptions = ['Grasp the apple'] 
                             # 'Move a snack I might like next to a snack I might not like']
                 
             with open('/workspace/SteerKep/SteerPoser/src/envs/obs.pkl', 'rb') as f:
