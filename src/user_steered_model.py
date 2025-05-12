@@ -2,9 +2,10 @@ import sys
 sys.path.append('/workspace/SteerKep/activation-steering')
 import json
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from activation_steering import MalleableModel, SteeringVector
+from activation_steering import SteeringDataset, MalleableModel, SteeringVector
 import torch
 import re
+import os
 
 def parse_output(raw_text):
     """
@@ -85,7 +86,7 @@ class UserSteeredModel:
         svpath = os.path.join(self.cfg.steering_vector_dir, steer_vector_name)
         self.steering_vector = SteeringVector.load(svpath)
 
-    def update_sv_strength_by_ratings(self, ratings_fname, sv_name=None):
+    def update_sv_strength_by_ratings(self, ratings_fname, sv_name=None, norm_H=False, eps=1e-8):
         if(sv_name is not None):
             self.set_steer_vector(sv_name)
         else:
@@ -101,9 +102,14 @@ class UserSteeredModel:
         self.ratings_dset = SteeringDataset(self.tokenizer, examples, suffixes, use_chat_template=self.use_chat_template) 
         print("Successfully reloaded ratings dataset")
         hidden_layer_ids = self.user_metadata['hidden_layer_ids']
-        strengths, layer_hiddens = self.steering_vector.fit_sv_strength(self.malleable_model, self.tokenizer, 
-                                                                        self.ratings_dset, hidden_layer_ids)
-        print(strengths)
+        strengths, layer_hiddens, train_strs = self.steering_vector.fit_sv_strength(self.malleable_model, self.tokenizer, self.ratings_dset, hidden_layer_ids, norm_H=norm_H)
+        layer_ratings = []
+        for id, s in strengths.items():
+            pos, neg = s[::2].mean(), s[1::2].mean()
+            rating = (pos - neg) / (abs(pos) + abs(neg) + eps)
+            print(f"Raw rating for layer {id} is {rating}")
+            layer_ratings.append(rating)
+        return(layer_ratings, strengths, layer_hiddens, train_strs)
         
     def apply_steering(self, steer_vector_name, strength, behavior_layer_ids):
         self.malleable_model = MalleableModel(self.model, self.tokenizer)

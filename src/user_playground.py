@@ -40,8 +40,8 @@ user = str(input("Hi! I am SteerBot, and I am here to help you. Who am I talking
 steer_cfg_path = get_steer_cfg_path(user)
 
 steering_cfg = get_config(config_path=steer_cfg_path)
-model = SteeredModel(steering_cfg)
-
+model = SteeredModel(steering_cfg, user)
+model.set_steer_vector("junk-healthy-24b.svec")
 
 lmps, lmp_env = setup_LMP(env, config, debug=False, model=model)
 voxposer_ui = lmps['plan_ui']
@@ -71,3 +71,27 @@ voxposer_ui(instruction)
 
 feedback = str(input("Please share any feedback on how well I assisted you today. "))
 
+
+
+
+if hidden_layer_ids is None:
+    hidden_layer_ids = range(model.config.num_hidden_layers)
+tokenizer.pad_token_id = 0
+batch_size = 32
+accumulate_last_x_tokens = "suffix-only"
+suffixes = steering_dataset.suffixes
+method = "pca_center"
+n_layers = len(get_model_layer_list(model))
+# Normalize the layer indexes if they are negative
+hidden_layer_ids = [i if i >= 0 else n_layers + i for i in hidden_layer_ids]
+train_strs = [s for ex in steering_dataset.formatted_dataset for s in (ex.positive, ex.negative)]
+layer_hiddens = batched_get_hiddens(
+    model, tokenizer, train_strs, hidden_layer_ids, batch_size, accumulate_last_x_tokens, suffixes
+)
+strengths = {}
+for layer in custom_progress(hidden_layer_ids, description="Reading Hidden Representations ..."):
+    H = layer_hiddens[layer]
+    steer_vector_direction = self.directions[layer]
+    steer_vector_direction_strength = project_onto_direction(H, steer_vector_direction)
+    print(f"strength for layer {layer}: {steer_vector_direction_strength}")
+    strengths[layer] = steer_vector_direction_strength
